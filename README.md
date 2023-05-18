@@ -55,3 +55,7 @@ Please note that each script takes the output of the previous script as its inpu
 ## Contributing
 
 Feel free to fork the project and submit a pull request with your changes!
+
+## License
+
+This project is licensed under the terms of the MIT License.
