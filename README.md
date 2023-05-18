@@ -8,7 +8,7 @@ This repository contains a collection of scripts for processing and converting d
 2. Merge individual JSON files into a single JSON file using `merge_json.py` (if you have multiple JSON files to combine)
 3. Convert the merged JSON file into a Markdown file using `json2md.py`
 4. Split the merged Markdown file into individual files using `split_md.py`
-5. Rename each split file using `rename_divided_files.py` based on the titles of ChatGPT discourse.
+5. Rename each split file using `rename_split_files.py` based on the titles of ChatGPT discourse.
 
 ## How to Use
 
@@ -46,9 +46,9 @@ You need to have Python installed on your machine to run these scripts.
     - `input_filename`: Filename of the input Markdown file
 7. Rename each split file based on their ChatGPT discourse titles:
     ```sh
-    python rename_divided_files.py <file>
+    python rename_split_files.py <files>
     ```
-    - `file`: The path of the markdown file to rename
+    - `files`: The path of the markdown files to rename
 
 Please note that each script takes the output of the previous script as its input. Therefore, you should run these scripts in the specified order.
 
