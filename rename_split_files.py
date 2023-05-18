@@ -28,31 +28,30 @@ def get_new_name(path):
 
     return f'{first_section}_{creation_time}.md' if first_section and creation_time else None
 
-def rename_file(args):
-    path = args.file
-    if not os.path.exists(path):
-        print(f"File {path} does not exist.")
-        return
+def rename_files(args):
+    for path in args.files:
+        if not os.path.exists(path):
+            print(f"File {path} does not exist.")
+            continue
 
-    new_name = get_new_name(path)
-    if not new_name:
-        print(f"Could not determine new name for file {path}.")
-        return
+        new_name = get_new_name(path)
+        if not new_name:
+            print(f"Could not determine new name for file {path}.")
+            continue
 
-    directory = os.path.dirname(path)
-    new_path = os.path.join(directory, new_name)
+        directory = os.path.dirname(path)
+        new_path = os.path.join(directory, new_name)
 
-    os.rename(path, new_path)
-    print(f"File {path} renamed to {new_name}.")
+        os.rename(path, new_path)
+        print(f"File {path} renamed to {new_name}.")
 
 def main():
     parser = argparse.ArgumentParser(description='Rename markdown file based on its first section and creation time.')
-    parser.add_argument('file', type=str, help='The path of the markdown file to rename.')
+    parser.add_argument('files', nargs='*', type=str, help='The path of the markdown file(s) to rename.')
 
     args = parser.parse_args()
 
-    rename_file(args)
+    rename_files(args)
 
 if __name__ == "__main__":
     main()
-
