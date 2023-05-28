@@ -6,7 +6,7 @@ import os
 import re
 from datetime import datetime
 
-def split_markdown_file(input_filename):
+def split_markdown_file(input_filename, remove_input):
     with open(input_filename, 'r') as file:
         contents = file.read()
         parts = re.split(r'\n\* \* \*\n', contents)
@@ -19,6 +19,10 @@ def split_markdown_file(input_filename):
             with open(output_filename, 'w') as file:
                 file.write(part)
             rename_file(output_filename)
+
+    if remove_input:
+        os.remove(input_filename)
+        print(f"Input file {input_filename} removed.")
 
 def get_new_name(path):
     with open(path, 'r') as file:
@@ -73,9 +77,10 @@ def rename_file(path):
 def main():
     parser = argparse.ArgumentParser(description='Split a markdown file at each line containing only "* * *" and rename it based on its first section and creation time.')
     parser.add_argument('input_filename', type=str, help='The markdown file to split and rename.')
+    parser.add_argument('--remove-input', action='store_true', help='Remove the input file after splitting and renaming.')
 
     args = parser.parse_args()
-    split_markdown_file(args.input_filename)
+    split_markdown_file(args.input_filename, args.remove_input)
 
 if __name__ == "__main__":
     main()
