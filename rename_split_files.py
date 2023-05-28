@@ -16,7 +16,7 @@ def get_new_name(path):
             first_section = line[2:].strip()
             first_section = first_section.replace("'", "") # Remove single quote
             first_section = first_section.replace('"', "") # Remove double quote
-            first_section = re.sub(r"[ .,:;]", "_", first_section) # Replace space, period, comma, semicolon, colon with underbar
+            first_section = re.sub(r"[ .,:;/]", "_", first_section) # Replace space, period, comma, semicolon, colon with underbar
             first_section = first_section.replace("__", "_") # Replace double underbar with single underbar
             first_section = first_section.rstrip("_") # Remove trailing underbar
         if line.startswith('Creation Time:'):
