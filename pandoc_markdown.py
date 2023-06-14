@@ -17,7 +17,7 @@ def main():
     pandoc_output, _ = pandoc_process.communicate()
 
     output = re.sub(r'text-rendering: optimizeLegibility;', 
-                    r'text-rendering: optimizeLegibility;\nfont-family: Arial, sans-serif;', 
+                    r'text-rendering: optimizeLegibility;\n      font-family: Arial, sans-serif;', 
                     pandoc_output.decode('utf-8'))
 
     if args.output_file is None:
