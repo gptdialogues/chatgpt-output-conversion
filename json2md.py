@@ -28,8 +28,13 @@ def json_to_markdown(json_data):
         for message in document['messages']:
             markdown += f"## {message['role'].title()}\n\n"
             if 'create_time' in message:
-                dt_object = datetime.datetime.fromtimestamp(message['create_time'])
-                markdown += f"Time: {dt_object}\n\n"
+                try:
+                    # Attempt to convert the timestamp to a datetime object
+                    dt_object = datetime.datetime.fromtimestamp(message['create_time'])
+                    markdown += f"Time: {dt_object}\n\n"
+                except TypeError:
+                    # Handle the case where 'create_time' is None or not valid
+                    markdown += "Time: Invalid or missing timestamp\n\n"
             content = message.get('content')
             if content:
                 for item in content:
