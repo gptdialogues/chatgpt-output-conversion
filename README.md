@@ -19,11 +19,11 @@ You need to have Python installed on your machine to run these scripts.
 
 1. Clone this repository:
     ```sh
-    git clone https://github.com/gptdialogues/chatgpt_output_conversion.git
+    git clone https://github.com/gptdialogues/chatgpt-output-conversion.git
     ```
 2. Change directory to the cloned repository:
     ```sh
-    cd chatgpt_output_conversion
+    cd chatgpt-output-conversion
     ```
 3. Use `backup.js` to download your ChatGPT output as JSON file(s). More instructions can be found in the [ChatGPT Backup Repository](https://github.com/abacaj/chatgpt-backup).
 4. If you have multiple JSON files, you can merge them into one file:
