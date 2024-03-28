@@ -1,19 +1,17 @@
 # ChatGPT Output Conversion Tool
 
-This repository contains a collection of scripts for processing and converting downloaded ChatGPT outputs. The goal is to enable efficient and streamlined conversion of ChatGPT outputs from JSON to Markdown files and rename them based on their titles.
+This repository contains a script for processing and converting downloaded ChatGPT outputs. The goal is to enable efficient and streamlined conversion of ChatGPT outputs from JSON to individual Markdown files, renaming them based on their titles and creation dates.
 
 ## Workflow
 
-1. Download ChatGPT output as JSON using "backup.js" from [ChatGPT Backup Repository](https://github.com/abacaj/chatgpt-backup)
-2. Merge individual JSON files into a single JSON file using `merge_json.py` (if you have multiple JSON files to combine)
-3. Convert the merged JSON file into a Markdown file using `json2md.py`
-4. Split the merged Markdown file into individual files and rename each split file based on the titles of ChatGPT discourse using `md_splitter_renamer.py`.
+1. Download ChatGPT output as JSON using "backup.js" from [ChatGPT Backup Repository](https://github.com/abacaj/chatgpt-backup).
+2. Convert the JSON file into individual Markdown files using `json2md.py`, which will also rename the files based on the titles of ChatGPT discourse and their creation dates.
 
 ## How to Use
 
 ### Prerequisites
 
-You need to have Python installed on your machine to run these scripts. 
+You need to have Python installed on your machine to run this script.
 
 ### Steps
 
@@ -25,26 +23,15 @@ You need to have Python installed on your machine to run these scripts.
     ```sh
     cd chatgpt-output-conversion
     ```
-3. Use `backup.js` to download your ChatGPT output as JSON file(s). More instructions can be found in the [ChatGPT Backup Repository](https://github.com/abacaj/chatgpt-backup).
-4. If you have multiple JSON files, you can merge them into one file:
+3. Use `backup.js` to download your ChatGPT output as a JSON file. More instructions can be found in the [ChatGPT Backup Repository](https://github.com/abacaj/chatgpt-backup).
+4. Convert the JSON file to individual Markdown files and rename them:
     ```sh
-    python merge_json.py <file1> <file2> -o <output_file>
-    ```
-    - `file1`: The first JSON file to merge
-    - `file2`: The second JSON file to merge
-    - `output_file`: Filename of the merged JSON file (default: merged.json)
-5. Convert the JSON file to Markdown:
-    ```sh
-    python json2md.py <filename>
+    python json2md.py <filename> [--remove-input]
     ```
     - `filename`: Filename of the input JSON file
-6. Split the merged Markdown file into individual files and rename them:
-    ```sh
-    python md_splitter_renamer.py <input_filename>
-    ```
-    - `input_filename`: Filename of the input Markdown file
+    - `--remove-input`: (Optional) Removes the input JSON file after processing
 
-Please note that each script takes the output of the previous script as its input. Therefore, you should run these scripts in the specified order.
+The `json2md.py` script will split the converted Markdown content into individual files based on the distinct discourses in the original JSON file. Each file will be renamed to include the title of the discourse and its creation date for easy identification.
 
 ## Contributing
 
