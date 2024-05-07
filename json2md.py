@@ -1,141 +1,192 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import json
 import argparse
 from datetime import datetime
 import re
 import os
+from typing import List, Dict, Tuple, Optional
 
-def validate_json(data):
-    """Validates the structure of the provided JSON data."""
+def validate_json(data: List[Dict]) -> None:
+    """
+    Validate the structure of the provided JSON data.
+
+    Args:
+        data (List[Dict]): A list of dictionaries representing conversations.
+
+    Raises:
+        ValueError: If the root element is not a list or if any conversation dictionary
+                    does not contain a 'mapping' key.
+
+    This function checks if the root of the JSON is a list and if each item in the list
+    is a dictionary with a required 'mapping' key. If these conditions are not met,
+    a ValueError with a descriptive message is raised.
+    """
     if not isinstance(data, list):
-        raise ValueError("Root JSON element should be a list of documents.")
+        raise ValueError("Root JSON element should be a list of conversations.")
+    for conversation in data:
+        if not isinstance(conversation, dict) or 'mapping' not in conversation:
+            raise ValueError("Each conversation should be a dictionary with a 'mapping' key.")
 
-    for document in data:
-        if not isinstance(document, dict) or 'messages' not in document:
-            raise ValueError("Each document should be a dictionary with a 'messages' key.")
+def sanitize_filename(title: str) -> str:
+    """
+    Sanitize a title string to create a valid and safe filename.
 
-        for message in document['messages']:
-            if not isinstance(message, dict) or 'role' not in message:
-                raise ValueError("Each message should be a dictionary with a 'role' key.")
+    Args:
+        title (str): The original title string that needs to be sanitized.
 
-def json_to_markdown(json_data):
-    markdown = ""
+    Returns:
+        str: A sanitized string safe for use as a filename.
 
-    for document in json_data:
-        title = document.get('title', 'Default Title')
-        markdown += f"# {title}\n\n"
-        if 'create_time' in document:
-            dt_object = datetime.fromtimestamp(document['create_time'])
-            markdown += f"Creation Time: {dt_object}\n\n"
-        for message in document['messages']:
-            markdown += f"## {message['role'].title()}\n\n"
-            if 'create_time' in message:
-                try:
-                    # Attempt to convert the timestamp to a datetime object
-                    dt_object = datetime.fromtimestamp(message['create_time'])
-                    markdown += f"Time: {dt_object}\n\n"
-                except TypeError:
-                    # Handle the case where 'create_time' is None or not valid
-                    markdown += "Time: Invalid or missing timestamp\n\n"
-            content = message.get('content')
-            if content:
-                for item in content:
-                    if isinstance(item, str):
-                        markdown += f"{item}\n\n"
-                    elif isinstance(item, dict):
-                        content_type = item.get('content_type')
-                        if content_type == 'image_asset_pointer':
-                            markdown += f"Image Asset: {item.get('asset_pointer')}\n"
-                            markdown += f"Size: {item.get('size_bytes')} bytes\n"
-                            markdown += f"Dimensions: {item.get('width')}x{item.get('height')}\n\n"
-            if message.get('model'):
-                markdown += f"Model: {message['model']}\n\n"
-        markdown += f"* * *\n\n"
-    return markdown
+    The function removes any characters that are not alphanumeric, spaces, or
+    specific punctuation, and then replaces spaces and punctuation with underscores
+    to ensure a valid filename format that is also filesystem-safe.
+    """
+    sanitized_title = re.sub('[^a-zA-Z0-9 \n.,:;/]', '', title)
+    sanitized_title = re.sub(r"[ .,:;/]+", "_", sanitized_title).rstrip("_")
+    return sanitized_title
 
-def split_markdown_file(contents, output_base_name, remove_input=False):
-    parts = re.split(r'\n\* \* \*\n', contents)
+def format_message(message: Dict) -> str:
+    """
+    Format a message dictionary into a Markdown formatted string.
 
-    for i, part in enumerate(parts):
-        part = part.strip()
-        if part:
-            output_filename = f"{output_base_name}_part{i}.md"
-            output_filename = get_unique_filename(output_filename)
-            with open(output_filename, 'w') as file:
-                file.write(part)
-            rename_file(output_filename)
+    Args:
+        message (Dict): A dictionary containing the message details.
 
-    if remove_input:
-        os.remove(input_filename)
-        print(f"Input file {input_filename} removed.")
+    Returns:
+        str: A formatted string in Markdown that represents the message.
 
-def get_new_name(path):
-    with open(path, 'r') as file:
-        lines = file.readlines()
+    This function extracts the author and content from the message dictionary
+    and formats it into a Markdown heading and content section.
+    """
+    author = "User" if message["author"]["role"] == "user" else "Assistant"
+    content = message["content"]["parts"][0]  # Assuming single part content for simplicity
+    return f"## {author}: \n\n{content}\n\n"
 
-    first_section = ""
-    creation_time = ""
-    for line in lines:
-        if line.startswith('# '):
-            first_section = line[2:].strip()
-            first_section = first_section.replace("'", "")
-            first_section = first_section.replace('"', "")
-            first_section = re.sub(r"[ .,:;/]", "_", first_section)
-            first_section = first_section.replace("__", "_")
-            first_section = first_section.rstrip("_")
-        if line.startswith('Creation Time:'):
-            creation_time = line[len('Creation Time:'):].strip().split()[0]
-            creation_time = datetime.strptime(creation_time, '%Y-%m-%d')
-            creation_time = creation_time.strftime('%Y_%m%d')
-        if first_section and creation_time:
-            break
+def format_datetime(timestamp: Optional[int]) -> str:
+    """
+    Convert a UNIX timestamp into a human-readable date and time string.
 
-    return f'{first_section}_{creation_time}.md' if first_section and creation_time else None
+    Args:
+        timestamp (Optional[int]): UNIX timestamp.
 
-def get_unique_filename(filename):
-    directory, name = os.path.split(filename)
-    base, ext = os.path.splitext(name)
+    Returns:
+        str: A string representing the formatted date and time.
 
-    counter = 1
-    while os.path.exists(filename):
-        filename = os.path.join(directory, f"{base}_{counter}{ext}")
-        counter += 1
+    If the timestamp is not provided (None), the function returns ''.
+    """
+    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S') if timestamp else ""
 
-    return filename
+def format_datetime_for_filename(timestamp: Optional[int]) -> str:
+    """
+    Convert a UNIX timestamp into a string format suitable for use in filenames.
 
-def rename_file(path):
-    if not os.path.exists(path):
-        print(f"File {path} does not exist.")
-        return
+    Args:
+        timestamp (Optional[int]): UNIX timestamp.
 
-    new_name = get_new_name(path)
-    if not new_name:
-        print(f"Could not determine new name for file {path}.")
-        return
+    Returns:
+        str: A string representing the date suitable for filenames.
 
-    directory = os.path.dirname(path)
-    new_path = get_unique_filename(os.path.join(directory, new_name))
+    The function formats the timestamp specifically for inclusion in filenames,
+    avoiding characters that might not be suitable such as colons or spaces.
+    """
+    return datetime.fromtimestamp(timestamp).strftime('%Y_%m%d') if timestamp else ""
 
-    os.rename(path, new_path)
-    print(f"File {path} renamed to {new_name}.")
+def generate_frontmatter(conversation: Dict) -> str:
+    """
+    Generate the Markdown frontmatter for a conversation.
 
-def main():
-    parser = argparse.ArgumentParser(description='Convert JSON to Markdown, split the markdown file, and rename it based on its content.')
-    parser.add_argument('filename', help='The name of the json file')
-    parser.add_argument('--remove-input', action='store_true', help='Remove the input file after processing.')
+    Args:
+        conversation (Dict): A dictionary representing the conversation.
+
+    Returns:
+        str: The frontmatter for the Markdown document.
+    """
+    title = conversation['title']
+    return (
+        f"---\ntitle: {title}\ncreate_time: {format_datetime(conversation['create_time'])}\n"
+        f"update_time: {format_datetime(conversation['update_time'])}\n"
+        f"conversation_id: {conversation['conversation_id']}\n---\n\n"
+    )
+
+def compose_markdown_document(conversation: Dict) -> Tuple[str, str]:
+    """
+    Generate the Markdown content and a filename timestamp from a conversation dictionary.
+
+    Args:
+        conversation (Dict): A dictionary representing the conversation.
+
+    Returns:
+        Tuple[str, str]: A tuple containing the complete Markdown content as a string and a creation
+                         time string formatted for filenames.
+
+    This function constructs the Markdown representation of the conversation, including
+    frontmatter with metadata and formatted messages.
+    """
+    title = conversation['title']
+    create_time = format_datetime_for_filename(conversation['create_time'])
+    frontmatter = generate_frontmatter(conversation)
+    messages_content = f"# {title}\n\nCreation Time: {format_datetime(conversation['create_time'])}\n\nUpdate Time: {format_datetime(conversation['update_time'])}\n\n"
+    for _, details in conversation['mapping'].items():
+        if details['message'] and details['message']['content']['content_type'] == 'text':
+            messages_content += format_message(details['message'])
+    return frontmatter + messages_content, create_time
+
+def save_markdown(filepath: str, content: str) -> None:
+    """
+    Write the generated Markdown content to a specified file.
+
+    Args:
+        filepath (str): The full path where the file will be written.
+        content (str): The Markdown content to be written.
+
+    This function opens the specified file path in write mode, writes the content,
+    and then safely closes the file, ensuring data integrity even if an error occurs.
+    """
+    with open(filepath, 'w', encoding='utf-8') as file:
+        file.write(content)
+    print(f"Created: {filepath}")
+
+def generate_markdown_files_from_json(json_filename: str, output_dir: str) -> None:
+    """
+    Process a JSON file to generate Markdown files for each conversation.
+
+    Args:
+        json_filename (str): Path to the JSON file containing conversation data.
+        output_dir (str): Directory where the Markdown files will be saved.
+
+    This function reads a JSON file, validates and processes each conversation to generate
+    Markdown files, which are then saved to the specified output directory.
+    """
+    try:
+        with open(json_filename, 'r', encoding='utf-8') as json_file:
+            conversations = json.load(json_file)
+        validate_json(conversations)
+        for conversation in conversations:
+            content, create_time = compose_markdown_document(conversation)
+            filename = sanitize_filename(conversation['title']) + f"_{create_time}.md"
+            filepath = os.path.join(output_dir, filename)
+            save_markdown(filepath, content)
+    except FileNotFoundError:
+        print(f"Error: The file {json_filename} was not found.")
+    except json.JSONDecodeError:
+        print(f"Error: There was an issue decoding {json_filename}. Please check the file format.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+def main() -> None:
+    """
+    Main function to handle command-line execution for processing JSON to Markdown.
+
+    This function parses command-line arguments for the JSON filename and output directory,
+    and calls the function to process the JSON file into Markdown.
+    """
+    parser = argparse.ArgumentParser(description='Process JSON conversations into markdown files.')
+    parser.add_argument('json_filename', help='The JSON file containing the conversations.')
+    parser.add_argument('-o', '--output', default='.', help='Directory to save the markdown files (default is current directory).')
     args = parser.parse_args()
 
-    try:
-        with open(args.filename, 'r') as json_file:
-            data = json.load(json_file)
-        validate_json(data)
-        markdown = json_to_markdown(data)
-        output_base_name = args.filename.split('.')[0]
-        split_markdown_file(markdown, output_base_name, args.remove_input)
-    except json.decoder.JSONDecodeError:
-        print("Error: Malformed JSON input.")
-    except ValueError as e:
-        print(f"Error: {e}")
+    generate_markdown_files_from_json(args.json_filename, args.output)
 
 if __name__ == "__main__":
     main()
