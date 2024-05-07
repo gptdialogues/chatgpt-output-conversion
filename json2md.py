@@ -42,7 +42,8 @@ def sanitize_filename(title: str) -> str:
     specific punctuation, and then replaces spaces and punctuation with underscores
     to ensure a valid filename format that is also filesystem-safe.
     """
-    sanitized_title = re.sub('[^a-zA-Z0-9 \n.,:;/]', '', title)
+    #sanitized_title = re.sub('[^a-zA-Z0-9 \n.,:;/]', '', title)
+    sanitized_title = re.sub('[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF \n.,:;/]', '', title) # Japanese
     sanitized_title = re.sub(r"[ .,:;/]+", "_", sanitized_title).rstrip("_")
     return sanitized_title
 
@@ -59,7 +60,12 @@ def format_message(message: Dict) -> str:
     This function extracts the author and content from the message dictionary
     and formats it into a Markdown heading and content section.
     """
-    author = "User" if message["author"]["role"] == "user" else "Assistant"
+    if message["author"]["role"] == "user":
+        author = "User" 
+    else:
+        author = "Assistant"
+    if 'metadata' in message and 'model_slug' in message['metadata']:
+        author += f" (Model: {message['metadata']['model_slug']})"
     content = message["content"]["parts"][0]  # Assuming single part content for simplicity
     return f"## {author}: \n\n{content}\n\n"
 
