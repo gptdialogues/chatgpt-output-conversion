@@ -65,9 +65,9 @@ def format_message(message: Dict) -> str:
     else:
         author = "Assistant"
     if 'metadata' in message and 'model_slug' in message['metadata']:
-        author += f" (Model: {message['metadata']['model_slug']})"
+        author += f" ({message['metadata']['model_slug']})"
     content = message["content"]["parts"][0]  # Assuming single part content for simplicity
-    return f"## {author}: \n\n{content}\n\n"
+    return f"## {author}\n\n{content}\n\n"
 
 def format_datetime(timestamp: Optional[int]) -> str:
     """
