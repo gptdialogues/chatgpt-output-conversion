@@ -30,8 +30,6 @@ python3 merge_json.py <file1> <file2> [-o <output_file>]
 - `<file1>` and `<file2>`: The JSON files to be merged.
 - `<output_file>`: (Optional) The name of the output file to store the merged JSON; defaults to `merged.json`.
 
-* * *
-
 ## How to Download Your ChatGPT Conversational Data
 
 Before using `json2md.py`, you may need to download your ChatGPT conversation history. Follow these steps to download your data from OpenAI:
@@ -45,3 +43,6 @@ Before using `json2md.py`, you may need to download your ChatGPT conversation hi
 
 For more detailed instructions and screenshots, please refer to the official guide on [How to Export ChatGPT History and Data](https://help.openai.com/en/articles/7260999-how-do-i-export-my-chatgpt-history-and-data).
 
+## Acknowledgments
+
+In developing this script, I referred to Bastian Moritz's web article, which can be found at [How-to Convert Your Exported ChatGPT Conversations to use with Obsidian](https://www.mxmoritz.com/article/converting-chatgpt-conversations-to-markdown/).
