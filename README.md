@@ -18,7 +18,7 @@ python3 json2md.py <json_filename> [-o <output_file>]
 ```
 
 - `<json_filename>`: The JSON file containing the conversation data.
-- `<output_file>`: (Optional) The directory where Markdown files will be saved; defaults to the current directory with summarized titles given by ChatGPT.
+- `<output_file>`: (Optional) The directory where Markdown files will be saved; defaults to the current directory with summarized titles given by ChatGPT, and also supports Japanese summarized titles.
 
 ### 2. `merge_json.py`
 
